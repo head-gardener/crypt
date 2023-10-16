@@ -1,0 +1,92 @@
+cabal-version:       2.2
+name:                crypt
+version:             0.1.0.0
+license:             BSD-3-Clause
+license-file:        LICENSE
+build-type:          Simple
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     
+    Data.Bijection
+    Data.Cipher
+    Data.Modulo
+    Data.Cipher.Affine
+    Data.Cipher.Alphabet
+    Data.Cipher.Cipher
+    Data.Cipher.Hill
+    Data.Cipher.Internal
+    Data.Cipher.Shift
+    Data.Cipher.Subs
+    Data.Cipher.Trans
+    Data.Cipher.Vigenere
+  build-depends:       base >= 4.7 && < 5,
+                       mtl,
+                       transformers,
+                       split,
+                       vector,
+                       bimap
+  default-language:    Haskell2010
+  default-extensions:
+    MultiParamTypeClasses 
+    TypeSynonymInstances 
+    FlexibleInstances 
+  ghc-options:         -Wall
+                       -Wcompat
+                       -Widentities
+                       -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
+                       -Wmissing-export-lists
+                       -Wmissing-home-modules
+                       -Wpartial-fields
+                       -Wredundant-constraints
+
+executable crypt
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  build-depends:       base
+                     , crypt
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+                       -Wcompat
+                       -Widentities
+                       -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
+                       -Wmissing-export-lists
+                       -Wmissing-home-modules
+                       -Wpartial-fields
+                       -Wredundant-constraints
+                       -threaded
+                       -rtsopts
+                       -with-rtsopts=-N
+
+test-suite crypt-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  other-modules:
+    Data.ModuloSpec
+    Data.CipherSpec
+    Data.Cipher.AlphabetSpec
+  build-depends:       base
+                     , crypt
+                     , hspec
+                     , QuickCheck
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+                       -Wcompat
+                       -Widentities
+                       -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
+                       -Wmissing-export-lists
+                       -Wmissing-home-modules
+                       -Wpartial-fields
+                       -Wredundant-constraints
+                       -threaded
+                       -rtsopts
+                       -with-rtsopts=-N
+                       -fhpc
+
+source-repository head
+  type:     git
+  location: https://github.com/head-gardener/crypt
