@@ -2,9 +2,9 @@ module Data.CipherSpec (main, spec) where
 
 import Control.Monad (forM_, void)
 import Data.Cipher
-import Data.Cipher.Hill (strToMx)
 import Data.Cipher.Internal
 import Data.List (permutations)
+import Data.Modulo (strToMx)
 import Test.Hspec
 import Test.QuickCheck
 
@@ -19,14 +19,19 @@ spec = do
         encipher "0123" (shift '2') "0123" `shouldBe` Just "2301"
 
       it "is reversible" $ do
-        property $ testCipher $ shift (alphanumStr !! 34)
+        property $
+          \o -> o `elem` alphanumStr ==> testCipher $ shift o
 
     context "affine" $ do
       it "passes sanity" $
         encipher "0123" (affine '3' '1') "0123" `shouldBe` Just "3210"
 
       it "is reversible" $ do
-        property $ testCipher $ affine (alphanumStr !! 2) (alphanumStr !! 34)
+        property $
+          \b ->
+            b `elem` alphanumStr ==>
+              testCipher $
+                affine (alphanumStr !! 2) b
 
     context "subs" $ do
       it "passes sanity" $
@@ -43,22 +48,23 @@ spec = do
         forM_ ["cab"] (f $ Just ())
 
     context "hill" $ do
-      it "passes sanity" $ do
-        encipher "0123" (hill $ strToMx "0123") "0123" `shouldBe` Just "1032"
+      it "passes sanity" $
+        do
+          encipher "0123456" (hill $ strToMx "1234") "0123"
+          `shouldBe` Just "3442"
 
       it "is reversible" $ do
         property $
-          testCipher' (pad alphanum 4) $
-            trans $
-              permutations (take 4 alphanumStr) !! 16
+          testCipher' (pad alphanum 2) $
+            hill $
+              strToMx "1234"
 
       it "validates keys" $ do
         let f want is =
               (is, void $ makeCipherS "0123456" $ hill $ strToMx is)
                 `shouldBe` (is, want)
-        -- FIXME: MORE!
-        forM_ ["0000"] (f Nothing)
-        forM_ ["1001"] (f $ Just ())
+        forM_ ["0000", "1237"] (f Nothing)
+        forM_ ["1001", "1234"] (f $ Just ())
 
     context "trans" $ do
       it "passes sanity" $ do

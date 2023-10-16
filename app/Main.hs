@@ -1,7 +1,6 @@
 module Main (main) where
 
 import Data.Cipher
-import Debug.Trace
 
 main :: IO ()
 main = do

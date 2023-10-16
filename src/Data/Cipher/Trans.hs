@@ -26,7 +26,6 @@ trans key = Cipher $ do
           guard $ all (isJust . pos alph) s
           return $ f s
 
-    chunks :: Alphabet -> Int -> String -> [String]
     chunks _ _ "" = []
     chunks a k s = chunksOf k $ pad a k s
 
