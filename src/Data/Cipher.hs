@@ -1,7 +1,8 @@
 module Data.Cipher
-  ( module Data.Cipher.Cipher,
-    module Data.Cipher.Alphabet,
+  ( module Data.Cipher.Alphabet,
     module Data.Cipher.Affine,
+    module Data.Cipher.Cipher,
+    module Data.Cipher.Error,
     module Data.Cipher.Hill,
     module Data.Cipher.Shift,
     module Data.Cipher.Subs,
@@ -13,6 +14,7 @@ where
 import Data.Cipher.Affine
 import Data.Cipher.Alphabet
 import Data.Cipher.Cipher
+import Data.Cipher.Error
 import Data.Cipher.Hill (hill)
 import Data.Cipher.Shift
 import Data.Cipher.Subs

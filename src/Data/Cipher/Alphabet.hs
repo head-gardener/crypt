@@ -11,7 +11,8 @@ module Data.Cipher.Alphabet
   )
 where
 
-import Data.Bimap ((!?), (!?>), (!))
+import Control.Monad
+import Data.Bimap ((!), (!?), (!?>))
 import qualified Data.Bimap as BM
 import Data.Maybe (fromMaybe)
 
@@ -19,8 +20,13 @@ newtype Alphabet = Alphabet (BM.Bimap Char Int)
   deriving (Eq, Show)
 
 alphabet :: String -> Maybe Alphabet
-alphabet s = Alphabet <$> foldr f (Just BM.empty) (zip [0 ..] s)
+alphabet = validate >=> foldr f (Just BM.empty) . zip [0 ..] >=> return . Alphabet
   where
+    validate s = do
+      let ls = lines s
+      guard $ length ls == 1
+      Just $ head ls
+
     f _ Nothing = Nothing
     f (i, c) (Just a) =
       if BM.notMember c a

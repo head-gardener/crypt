@@ -20,11 +20,11 @@ library
     Data.Cipher.Subs
     Data.Cipher.Trans
     Data.Cipher.Vigenere
-  build-depends:       base >= 4.7 && < 5,
-                       mtl,
-                       transformers,
-                       split,
-                       bimap
+  build-depends:       base >= 4.7 && < 5
+                     , mtl
+                     , transformers
+                     , split
+                     , bimap
   default-language:    Haskell2010
   default-extensions:
     MultiParamTypeClasses 
@@ -45,6 +45,10 @@ executable crypt
   main-is:             Main.hs
   build-depends:       base
                      , crypt
+                     , parseargs
+  other-modules:
+    Interface.CLI
+    Interface.Common
   default-language:    Haskell2010
   ghc-options:         -Wall
                        -Wcompat

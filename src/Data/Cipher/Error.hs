@@ -1,27 +1,19 @@
 module Data.Cipher.Error
   ( CipherError,
-    tryEncipher,
-    tryDecipher,
+    tryMakeCipher,
   )
 where
 
-import Data.Cipher.Cipher
 import Data.Cipher.Alphabet
+import Data.Cipher.Cipher
 
 data CipherError = BadAlphabet | BadKey | BadInput
   deriving (Eq, Show)
 
-tryEncipher :: String -> Cipher -> String -> Either CipherError String
-tryEncipher a c s = do
-  (e, _) <- tryMakeCipher a c
-  maybe (Left BadInput) Right $ e s
+type ConvertE = String -> Either CipherError String
 
-tryDecipher :: String -> Cipher -> String -> Either CipherError String
-tryDecipher a c s = do
-  (_, d) <- tryMakeCipher a c
-  maybe (Left BadInput) Right $ d s
-
-tryMakeCipher :: String -> Cipher -> Either CipherError (Convert, Convert)
+tryMakeCipher :: String -> Cipher -> Either CipherError (ConvertE, ConvertE)
 tryMakeCipher a c = do
   alph <- maybe (Left BadAlphabet) Right $ alphabet a
-  maybe (Left BadKey) Right $ makeCipher alph c
+  (e, d) <- maybe (Left BadKey) Right $ makeCipher alph c
+  return (maybe (Left BadInput) Right . e, maybe (Left BadInput) Right . d)
