@@ -1,14 +1,20 @@
 module Main (main) where
 
+import Control.Monad
 import Data.Cipher
+import Data.Cipher.Error (tryDecipher, tryEncipher)
+import Data.Modulo (strToMx)
 
 main :: IO ()
-main = do
-  case ciph of
-    Just c -> do
-      let s = fst c "0123abcdABCD"
-      print s 
-      print $ s >>= snd c
-    Nothing -> putStrLn "invalid key"
+main = forever $ do
+  s <- getLine
+  either
+    print
+    ( \s' ->
+        putStrLn ("enc: " ++ s')
+          >> either print (putStrLn . ("dec: " ++)) (dec s')
+    )
+    $ enc s
   where
-    ciph = makeCipher alphanum (trans "ewrb")
+    enc = tryEncipher "1234567" $ hill $ strToMx "1234"
+    dec = tryDecipher "1234567" $ hill $ strToMx "1234"

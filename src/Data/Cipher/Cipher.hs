@@ -1,5 +1,6 @@
 module Data.Cipher.Cipher
   ( Cipher (..),
+    Convert,
     makeCipher,
     makeCipherS,
     encipher,
@@ -8,7 +9,6 @@ module Data.Cipher.Cipher
 where
 
 import Control.Monad.Reader
-import Data.Bijection
 import Data.Cipher.Alphabet
 
 type Convert = String -> Maybe String
@@ -19,12 +19,6 @@ type Convert = String -> Maybe String
 -- Can be extended to gobble Show types.
 newtype Cipher
   = Cipher (ReaderT Alphabet Maybe (Convert, Convert))
-
--- The instance is free, since functor over
--- a tuple of arrows has bijection instance
--- instance Bijection Cipher (Reader Alphabet) String String where
---   fwd (Cipher c) = fwd c
---   bwd (Cipher c) = bwd c
 
 encipher :: String -> Cipher -> String -> Maybe String 
 encipher a c s = makeCipherS a c >>= ($ s) . fst
@@ -38,20 +32,20 @@ makeCipherS a (Cipher c) = alphabet a >>= runReaderT c
 makeCipher :: Alphabet -> Cipher -> Maybe (Convert, Convert)
 makeCipher a (Cipher c) = runReaderT c a
 
--- Encryption algos can be combined.
+-- Cipher algos can be combined.
 -- Semigroup laws obviously hold.
--- instance Semigroup Cipher where
---   (Cipher a) <> (Cipher b) = Cipher x
---     where
---       x = do
---         (e, d) <- a
---         (e', d') <- b
---         return (e . e', d . d')
+instance Semigroup Cipher where
+  (Cipher a) <> (Cipher b) = Cipher x
+    where
+      x = do
+        (e, d) <- a
+        (e', d') <- b
+        return (e' >=> e, d >=> d')
 
 -- Initial object is a cipher that doesn't
 -- modify the message.
--- instance Monoid Cipher where
---   mempty = Cipher $ return (id, id)
+instance Monoid Cipher where
+  mempty = Cipher $ return (return, return)
 
 -- Ciphers form a group:
 -- 0 is cipher id id,

@@ -15,7 +15,7 @@ where
 
 import Control.Monad
 
-type Matrix a = ((a, a), (a, a))
+type Matrix a = Vec (Vec a)
 
 type Vec a = (a, a)
 

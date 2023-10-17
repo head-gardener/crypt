@@ -8,12 +8,12 @@ build-type:          Simple
 library
   hs-source-dirs:      src
   exposed-modules:     
-    Data.Bijection
     Data.Cipher
     Data.Modulo
     Data.Cipher.Affine
     Data.Cipher.Alphabet
     Data.Cipher.Cipher
+    Data.Cipher.Error
     Data.Cipher.Hill
     Data.Cipher.Internal
     Data.Cipher.Shift
@@ -24,7 +24,6 @@ library
                        mtl,
                        transformers,
                        split,
-                       vector,
                        bimap
   default-language:    Haskell2010
   default-extensions:

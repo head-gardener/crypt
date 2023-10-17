@@ -24,21 +24,25 @@ spec = do
 
     context "affine" $ do
       it "passes sanity" $
-        encipher "0123" (affine '3' '1') "0123" `shouldBe` Just "3210"
+        encipher "0123" (affine ('3', '1')) "0123" `shouldBe` Just "3210"
 
       it "is reversible" $ do
         property $
           \b ->
             b `elem` alphanumStr ==>
               testCipher $
-                affine (alphanumStr !! 2) b
+                affine (alphanumStr !! 2, b)
 
     context "subs" $ do
       it "passes sanity" $
         encipher "0123" (subs "3120") "0123" `shouldBe` Just "3120"
 
-      it "is reversible" $ do
-        property $ testCipher $ subs $ reverse alphanumStr
+      it "is reversible" $ property $ do
+        \n ->
+          n >= 0 && n < 1585267068834414592 ==>
+            testCipher $
+              subs $
+                permutations alphanumStr !! n
 
       it "validates keys" $ do
         let f want is =
@@ -98,6 +102,18 @@ spec = do
                 `shouldBe` (is, want)
         forM_ ["", "abcde"] (f Nothing)
         forM_ ["cab", "aab", "a"] (f $ Just ())
+
+    context "cipher chains" $ do
+      it "are reversible" $ do
+        property $
+          testCipher $
+            vigenere "abcd"
+              <> shift 'e'
+              <> affine ('b', 'Q')
+              <> subs (reverse alphanumStr)
+              <> vigenere "2t8v"
+              <> shift '9'
+              <> subs (permutations alphanumStr !! 5231)
   where
     testCipher = testCipher' id
 
