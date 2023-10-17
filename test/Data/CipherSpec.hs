@@ -22,16 +22,27 @@ spec = do
         property $
           \o -> o `elem` alphanumStr ==> testCipher $ shift o
 
+      it "has a noop" $
+        property $
+          testCipher'' id $
+            shift $
+              head alphanumStr
+
     context "affine" $ do
       it "passes sanity" $
         encipher "0123" (affine ('3', '1')) "0123" `shouldBe` Just "3210"
 
-      it "is reversible" $ do
+      it "is reversible" $
         property $
           \b ->
             b `elem` alphanumStr ==>
               testCipher $
                 affine (alphanumStr !! 2, b)
+
+      it "has a noop" $
+        property $
+          testCipher'' id $
+            affine (alphanumStr !! 1, head alphanumStr)
 
     context "subs" $ do
       it "passes sanity" $
@@ -39,10 +50,10 @@ spec = do
 
       it "is reversible" $ property $ do
         \n ->
-          n >= 0 && n < 1585267068834414592 ==>
-            testCipher $
-              subs $
-                permutations alphanumStr !! n
+          let n' = limit 0 (product [1 .. length alphanumStr]) n
+           in testCipher $
+                subs $
+                  permutations alphanumStr !! n'
 
       it "validates keys" $ do
         let f want is =
@@ -50,6 +61,9 @@ spec = do
                 `shouldBe` (is, want)
         forM_ ["", "abcd", "eqw", "aab"] (f Nothing)
         forM_ ["cab"] (f $ Just ())
+
+      it "has a noop" $ property $ do
+        testCipher'' id $ subs alphanumStr
 
     context "hill" $ do
       it "passes sanity" $
@@ -70,16 +84,21 @@ spec = do
         forM_ ["0000", "1237"] (f Nothing)
         forM_ ["1001", "1234"] (f $ Just ())
 
+      it "has a noop" $ property $ do
+        testCipher'' (pad alphanum 2) $ hill $ strToMx "baab"
+
     context "trans" $ do
       it "passes sanity" $ do
         encipher "0123" (trans "31") "0123" `shouldBe` Just "1032"
         encipher "0123" (trans "301") "0123" `shouldBe` Just "201030"
 
       it "is reversible" $ do
-        property $
-          testCipher' (pad alphanum 4) $
-            trans $
-              permutations (take 4 alphanumStr) !! 16
+        property $ \n i ->
+          let i' = limit 4 8 i
+              n' = limit 0 (product [1 .. i']) n
+           in testCipher' (pad alphanum i') $
+                trans $
+                  permutations (take i' alphanumStr) !! n'
 
       it "validates keys" $ do
         let f want is =
@@ -87,6 +106,12 @@ spec = do
                 `shouldBe` (is, want)
         forM_ ["", "eqw", "aab", "abcde"] (f Nothing)
         forM_ ["db", "dcab"] (f $ Just ())
+
+      it "has a noop" $
+        property $
+          \i ->
+            let i' = limit 1 10 i
+             in testCipher'' (pad alphanum i') $ trans (take i' alphanumStr)
 
     context "vigenere" $ do
       it "passes sanity" $ do
@@ -103,8 +128,14 @@ spec = do
         forM_ ["", "abcde"] (f Nothing)
         forM_ ["cab", "aab", "a"] (f $ Just ())
 
+      it "has a noop" $
+        property $
+          \i ->
+            let i' = limit 1 10 i
+             in testCipher'' id $ vigenere $ replicate i' $ head alphanumStr
+
     context "cipher chains" $ do
-      it "are reversible" $ do
+      it "are reversible" $
         property $
           testCipher $
             vigenere "abcd"
@@ -114,6 +145,18 @@ spec = do
               <> vigenere "2t8v"
               <> shift '9'
               <> subs (permutations alphanumStr !! 5231)
+
+      it "preserve noops" $
+        property $
+          let a = head alphanumStr
+              b = alphanumStr !! 1
+           in testCipher'' (pad alphanum 4) $
+                shift a
+                  <> affine (b, a)
+                  <> subs alphanumStr
+                  <> vigenere (replicate 8 a)
+                  <> hill ((b, a), (a, b))
+                  <> trans (take 4 alphanumStr)
   where
     testCipher = testCipher' id
 
@@ -127,3 +170,13 @@ spec = do
           (e, d) <- makeCipher alphanum c
           str' <- e str
           d str'
+
+    testCipher'' f c s =
+      if sanitized == "" && (s /= "")
+        then run s === Nothing
+        else run sanitized === (Just . f) sanitized
+      where
+        sanitized = filter (`elem` alphanumStr) s
+        run str = makeCipher alphanum c >>= ($ str) . fst
+
+    limit l u x = l + (abs x `mod` (u - l))

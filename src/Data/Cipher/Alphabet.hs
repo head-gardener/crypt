@@ -8,6 +8,7 @@ module Data.Cipher.Alphabet
     alphanumStr,
     vals,
     pos',
+    valsOrd,
   )
 where
 
@@ -15,6 +16,8 @@ import Control.Monad
 import Data.Bimap ((!), (!?), (!?>))
 import qualified Data.Bimap as BM
 import Data.Maybe (fromMaybe)
+import Data.List (sortBy)
+import Data.Function (on)
 
 newtype Alphabet = Alphabet (BM.Bimap Char Int)
   deriving (Eq, Show)
@@ -50,6 +53,9 @@ size (Alphabet m) = BM.size m
 
 vals :: Alphabet -> [Char]
 vals (Alphabet m) = BM.keys m
+
+valsOrd :: Alphabet -> [Char]
+valsOrd (Alphabet m) = fst <$> sortBy (compare `on` snd) (BM.assocs m)
 
 alphanum :: Alphabet
 alphanum = alphabet' alphanumStr

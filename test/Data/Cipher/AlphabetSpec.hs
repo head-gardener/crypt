@@ -30,3 +30,7 @@ spec = do
     it "preserves order" $ do
       let a = fromMaybe undefined $ alphabet "abc"
       mapM_ (\(i, c) -> (c, pos a c) `shouldBe` (c, Just i)) $ zip [0..] "abc"
+
+    it "valsOrd is correctly ordered" $ do
+      let a = fromMaybe undefined $ alphabet alphanumStr
+      valsOrd a `shouldBe` alphanumStr

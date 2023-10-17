@@ -9,7 +9,7 @@ import qualified Data.Bimap as BM
 subs :: String -> Cipher
 subs = cipherBuilder valid (const $ const mapM) (\m -> ((m !?), (m !?>)))
   where
-    valid alph s = permV alph s >> foldr f (Just BM.empty) (zip s (vals alph))
+    valid alph s = permV alph s >> foldr f (Just BM.empty) (zip s (valsOrd alph))
       where
         f _ Nothing = Nothing
         f (i, c) (Just a) =
