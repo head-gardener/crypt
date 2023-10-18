@@ -45,9 +45,9 @@ safeReadFile s p = readFile p `catch` handler
 run :: IO ()
 run = do
   args <- parseArgsIO ArgsComplete argList
-  alph <- safeReadFile defaultAlph "res/alphabet.txt"
-  key <- readFile "res/key.txt"
-  ss <- lines <$> readFile "res/in.txt"
+  alph <- safeReadFile defaultAlph "alphabet.txt"
+  key <- readFile "key.txt"
+  ss <- lines <$> readFile "in.txt"
   either (die . show) (mapM_ putStrLn) $ do
     let enc = gotArg args Encrypt
     let dec = gotArg args Decrypt
